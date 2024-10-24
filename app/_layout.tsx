@@ -10,8 +10,9 @@ export const unstable_settings = {
 export default function RootLayout() {
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      {/* <Stack.Screen options={{ headerShown: false }} name="index" /> */}
+      {/* <Stack.Screen options={{ headerShown: false }} name="(tabs)" /> */}
+      <Stack.Screen options={{ headerShown: false }} name="restaurantDetails/[id]" />
     </Stack>
   );
 }

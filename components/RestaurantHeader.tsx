@@ -1,9 +1,7 @@
 import { View, Text, Image, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
-import restaurants from '~/data/restaurants.json';
-const restaurant = restaurants[0];
 
-const Header = () => {
+const RestaurantHeader = ({ restaurant }) => {
   return (
     <>
         <Image source={{ uri: restaurant.image }} style={styles.image} />
@@ -25,4 +23,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default Header
+export default RestaurantHeader

@@ -7,8 +7,8 @@ const DishListItem = ({ dish, restaurantId }) => {
     <Pressable 
       className='flex-row mx-[20px] my-[10px] py-[10px] border-b-[1px] border-gray-400' 
       onPress={() => router.push({
-        pathname: `/restaurantDetails/dishDetails/${dish.id}`,  // Pass dishId dynamically
-        params: { restaurantId }  // Pass restaurantId as a parameter
+        pathname: '/dishDetails/[id]',  // Pass dishId dynamically
+        params: { restaurantId, id: dish.$id }  // Pass restaurantId as a parameter
       })}
     >
       <View className='flex-1'>

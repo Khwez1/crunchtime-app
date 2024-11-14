@@ -1,19 +1,37 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import restaurants from '~/data/restaurants.json';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import DishHeader from '~/components/DishHeader';
-import { useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import Counter from '~/components/Counter';
+import { useCart } from '~/store/cartStore';
+import { getDish } from '~/lib/appwrite';
 
 const DishDetails = () => {
   const [preference, setPreference] = useState('');
   const [count, setCount] = useState(1);
   const [optionalExtras, setOptionalExtras] = useState([]);
-  const [requiredExtras, setRequiredExtras] = useState({});  
+  const [requiredExtras, setRequiredExtras] = useState({}); 
+  const [dish, setDish] = useState(null); 
 
-  const { restaurantId, dishId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
+  console.log('the id', id);
+  
+  useEffect(() => {
+    const fetchDish = async () => {
+      try {
+          const fetchedDish = await getDish(id);
+          setDish(fetchedDish);
+        } catch (error) {
+          console.error('Error fetching dish:', error);
+        }
+    };
 
+    fetchDish();
+  }, [id]);
+
+  
+  
   const getTotal = () => {
     const optionalTotal = optionalExtras.reduce((total, extra) => total + extra.price, 0);
     const requiredTotal = Object.values(requiredExtras).reduce((total, extra) => total + extra.price, 0);
@@ -53,8 +71,24 @@ const DishDetails = () => {
     });
   };
 
-  const restaurant = useMemo(() => restaurants.find((o) => o.id === restaurantId), [restaurantId]);
-  const dish = useMemo(() => restaurant?.dishes.find((d) => d.id === dishId), [restaurant, dishId]);
+  const addProduct = useCart((state) => state.addProduct);
+  const cartItems = useCart((state) => state.carts);
+  console.log(JSON.stringify(cartItems, null, 2));
+  
+  const addToCart = () => {
+    if (!dish) return;
+    // Get the restaurant ID from the dish data
+    const restaurantId = dish.restaurants?.$id;
+    // If id exists, add the dish to the correct restaurant's cart
+    console.log('restuarantId:',restaurantId);
+    if (restaurantId) {
+      addProduct(dish, restaurantId, count, requiredExtras, optionalExtras); // Pass dish and restaurantId to your cart store
+      router.push({ pathname: '/cart/[id]', params: { id: restaurantId } });
+    } else {
+      console.error('Restaurant ID is missing for this dish.');
+    }
+  };
+  
 
   if (!dish) {
     return (
@@ -141,11 +175,11 @@ const DishDetails = () => {
           <Counter count={count} setCount={setCount} />
         </View>
 
-        <View className='flex-1 bg-black mt-auto p-[20px] items-center'>
-          <Text className='text-white font-bold text-[20px]'>
+        <TouchableOpacity onPress={() => addToCart()} className='flex-1 bg-black mt-auto p-[20px] items-center'>
+          <Text className='text-white font-bold text-[20px]' href='/cart/[id]'>
             Add {count} Items to basket (${getTotal()})
           </Text>
-        </View>
+        </TouchableOpacity>
 
       </View>
     </ScrollView>

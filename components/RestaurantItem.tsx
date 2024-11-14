@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 
 const RestaurantItem = ({ restaurant }) => {
   return (
-    <Pressable className='flex p-[10px] justify-center align-middle' onPress={() => router.push({pathname:'/restaurantDetails/[id]', params: {id: restaurant.id}})}>
+    <Pressable className='flex p-[10px] justify-center align-middle' onPress={() => router.push({pathname:'/restaurantDetails/[id]', params: {id: restaurant.$id}})}>
       <Image 
         source={{
             uri: restaurant.image

@@ -1,44 +1,100 @@
-import { Text, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { useCart } from '~/store/cartStore';
-import restaurants from '~/data/restaurants.json';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
+import { useCartContext } from '~/providers/CartProvider';
+import { useState, useEffect } from 'react';
+import { getRestaurants } from '~/lib/appwrite';
 
 const CartsPage = () => {
-  const carts = useCart((state) => state.carts);
-  console.log(JSON.stringify(carts, null, 3));
+  const { carts, loading: cartsLoading, error: cartsError } = useCartContext();
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const restaurantsData = await getRestaurants();
+        setRestaurants(restaurantsData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading || cartsLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-lg">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error || cartsError) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-red-500">{error || cartsError}</Text>
+      </View>
+    );
+  }
+
+  const calculateCartTotal = (cartItems) => {
+    const items = JSON.parse(cartItems);
+    return items.reduce((sum, item) => sum + item.totalPrice, 0);
+  };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text className="mb-4 text-2xl font-bold">Your Carts</Text>
-      {Object.keys(carts).length > 0 ? (
-        Object.keys(carts).map((restaurantId) => {
-          // Find restaurant details by ID
-          const restaurant = restaurants.find((r) => r.id === restaurantId);
-          if (!restaurant) return null;
+    <ScrollView className="flex-1 bg-white">
+      <View className="p-4">
+        <Text className="text-2xl font-bold mb-4">Your Carts</Text>
 
-          return (
-            <TouchableOpacity
-              key={restaurantId}
-              className="mb-4 rounded-lg bg-white p-4 shadow-md"
-              onPress={() => {
-                router.push({ pathname: 'cart/[restaurantId]', params: { restaurantId }})
-              }}
-            >
-              <Image source={{ uri: restaurant.image }} className="w-20 h-20 mb-4 rounded" />
-              <Text className="text-xl font-semibold">{restaurant.name}</Text>
-              <Text className="text-gray-500">{carts[restaurantId].length} items</Text>
-              <Text className="mt-2 font-semibold text-gray-700">
-                Total: $
-                {carts[restaurantId]
-                  .reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-                  .toFixed(2)}
-              </Text>
-            </TouchableOpacity>
-          );
-        })
-      ) : (
-        <Text className="text-gray-500">You have no items in your carts.</Text>
-      )}
+        {carts.length > 0 ? (
+          carts.map((cart) => {
+            const restaurant = restaurants.find((r) => r.$id === cart.restaurantId);
+            if (!restaurant) return null;
+
+            const cartItems = JSON.parse(cart.cartItems);
+            const totalAmount = calculateCartTotal(cart.cartItems);
+
+            return (
+              <TouchableOpacity
+                key={cart.$id}
+                className="bg-white rounded-lg shadow-md p-4 mb-4"
+                onPress={() => {
+                  router.push({
+                    pathname: 'cart/[restaurantId]',
+                    params: { restaurantId: cart.restaurantId }
+                  });
+                }}
+              >
+                <View className="flex-row justify-between items-center">
+                  <View>
+                    <Text className="text-lg font-semibold">{restaurant.name}</Text>
+                    <Text className="text-gray-600">
+                      {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text className="text-lg font-semibold">
+                      Total: ${totalAmount.toFixed(2)}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          <View className="items-center justify-center py-8">
+            <Text className="text-gray-500 text-lg">
+              You have no items in your carts.
+            </Text>
+          </View>
+        )}
+      </View>
     </ScrollView>
   );
 };

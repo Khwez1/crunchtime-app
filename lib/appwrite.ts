@@ -28,7 +28,7 @@ export async function getRestaurants() {
             "669a5a3d003d47ff98c7",
             "672b2eec001fae2377d9",
         );
-        console.log("RESPONSE:", res);
+        // console.log("RESPONSE:", res);
         return res.documents;
     }catch(error) {
         console.error('Failed to fetch Restaurants:', error);
@@ -77,7 +77,7 @@ export async function getDish(id) {
                 Query.equal('$id', id)
             ]
         );
-        console.log('RESPONSE:', res);
+        // console.log('RESPONSE:', res);
         const data = res.documents;
 
         // Ensure that requiredExtras and optionalExtras are parsed if they exist

@@ -1,17 +1,40 @@
-// app/cart/[id].tsx
+// cart/[id].tsx
 import { View, Text, FlatList, Image } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { getRestaurant } from '~/lib/appwrite'; // Assuming this fetches a single restaurant by ID
+import { getRestaurant } from '~/lib/appwrite';
 import CartDishItem from '~/components/CartDishItem';
-import { useCart } from '~/store/cartStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useCartContext } from '~/providers/CartProvider';
+import { useGlobalContext } from '~/providers/GlobalProvider';
 
 const Cart = () => {
-  const { id } = useLocalSearchParams();
-  const items = useCart((state) => state.carts[id] || []);
+  const { id } = useLocalSearchParams(); // id is the restaurantId
   const [restaurant, setRestaurant] = useState(null);
+  const { carts, loading, error } = useCartContext();
+  const { user } = useGlobalContext();
 
-  // Find the restaurant name by id
+  // Find the specific cart for this restaurant
+  const currentCart = useMemo(() => {
+    return carts.find(cart => cart.restaurantId === id);
+  }, [carts, id]);
+
+  // Parse cart items
+  const cartItems = useMemo(() => {
+    if (!currentCart) return [];
+    try {
+      return JSON.parse(currentCart.cartItems);
+    } catch (error) {
+      console.error("Error parsing cart items:", error);
+      return [];
+    }
+  }, [currentCart]);
+
+  // Calculate total
+  const total = useMemo(() => {
+    return cartItems.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2);
+  }, [cartItems]);
+
+  // Fetch restaurant details
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
@@ -24,7 +47,31 @@ const Cart = () => {
 
     fetchRestaurant();
   }, [id]);
-  
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>Loading cart...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-red-500">{error}</Text>
+      </View>
+    );
+  }
+
+  if (!currentCart) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>No items in cart for this restaurant</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex">
       <View className="m-[10px]">
@@ -37,21 +84,31 @@ const Cart = () => {
         </Text>
 
         <FlatList
-          data={items}
-          keyExtractor={(item) => item.id} // Update this if necessary
+          data={cartItems}
+          keyExtractor={(item, index) => `${item.dishId}-${index}`}
           renderItem={({ item }) => <CartDishItem cartDish={item} />}
+          ListEmptyComponent={
+            <Text className="text-center py-4">No items in cart</Text>
+          }
         />
 
-        <View className="h-[4px] mt-[10px] bg-gray-600" />
-
-        <View className="flex bg-black mt-auto p-[20px] items-center">
-          <Text className="text-white font-bold text-[20px]">
-            Checkout
-          </Text>
-        </View>
+        {cartItems.length > 0 && (
+          <>
+            <View className="h-[4px] mt-[10px] bg-gray-600" />
+            <View className="mt-4 mb-4">
+              <Text className="text-lg font-bold">Total: ${total}</Text>
+            </View>
+            <View className="flex bg-black mt-auto p-[20px] items-center">
+              <Text className="text-white font-bold text-[20px]">
+                Checkout
+              </Text>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
 };
 
 export default Cart;
+

@@ -4,39 +4,42 @@ import DishHeader from '~/components/DishHeader';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import Counter from '~/components/Counter';
-import { useCart } from '~/store/cartStore';
 import { getDish } from '~/lib/appwrite';
+import { useCartContext } from '~/providers/CartProvider';
+import { useGlobalContext } from '~/providers/GlobalProvider'; // Add this import
 
 const DishDetails = () => {
+  const { addProduct, carts } = useCartContext(); // Changed from cart to carts
+  const { user } = useGlobalContext(); // Add this to get the user
   const [preference, setPreference] = useState('');
-  const [count, setCount] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   const [optionalExtras, setOptionalExtras] = useState([]);
   const [requiredExtras, setRequiredExtras] = useState({}); 
-  const [dish, setDish] = useState(null); 
-
+  const [dish, setDish] = useState(null);
+  const [error, setError] = useState(null);
+  
   const { id } = useLocalSearchParams();
-  console.log('the id', id);
   
   useEffect(() => {
     const fetchDish = async () => {
       try {
-          const fetchedDish = await getDish(id);
-          setDish(fetchedDish);
-        } catch (error) {
-          console.error('Error fetching dish:', error);
-        }
+        const fetchedDish = await getDish(id);
+        setDish(fetchedDish);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching dish:', error);
+        setError('Error fetching dish details');
+      }
     };
 
     fetchDish();
   }, [id]);
 
-  
-  
   const getTotal = () => {
     const optionalTotal = optionalExtras.reduce((total, extra) => total + extra.price, 0);
     const requiredTotal = Object.values(requiredExtras).reduce((total, extra) => total + extra.price, 0);
     const dishTotal = dish?.price || 0;
-    const total = (dishTotal + optionalTotal + requiredTotal) * count;
+    const total = (dishTotal + optionalTotal + requiredTotal) * quantity;
     return total.toFixed(2);
   };
 
@@ -57,43 +60,59 @@ const DishDetails = () => {
 
   const handleRequiredExtras = (option, extraName) => {
     setRequiredExtras(prev => {
-      // If the same option is clicked again, remove it
       if (prev[extraName]?.name === option.name) {
         const newExtras = { ...prev };
         delete newExtras[extraName];
         return newExtras;
       }
-      // Otherwise, set the new option
       return {
         ...prev,
         [extraName]: option
       };
     });
   };
-
-  const addProduct = useCart((state) => state.addProduct);
-  const cartItems = useCart((state) => state.carts);
-  console.log(JSON.stringify(cartItems, null, 2));
   
-  const addToCart = () => {
-    if (!dish) return;
-    // Get the restaurant ID from the dish data
-    const restaurantId = dish.restaurants?.$id;
-    // If id exists, add the dish to the correct restaurant's cart
-    console.log('restuarantId:',restaurantId);
-    if (restaurantId) {
-      addProduct(dish, restaurantId, count, requiredExtras, optionalExtras); // Pass dish and restaurantId to your cart store
-      router.push({ pathname: '/cart/[id]', params: { id: restaurantId } });
-    } else {
-      console.error('Restaurant ID is missing for this dish.');
+  const addToCart = async () => {
+    try {
+      if (!dish) {
+        setError("Dish not found!");
+        return;
+      }
+  
+      if (!user) {
+        setError("Please log in to add items to cart");
+        return;
+      }
+    
+      const restaurantId = dish.restaurants?.$id;
+      if (!restaurantId) {
+        setError("Restaurant ID is missing for this dish.");
+        return;
+      }
+  
+      // Check if all required extras are selected
+      if (dish.requiredExtras) {
+        const missingRequired = dish.requiredExtras.some(extra => !requiredExtras[extra.name]);
+        if (missingRequired) {
+          setError("Please select all required extras before adding to cart");
+          return;
+        }
+      }
+    
+      await addProduct(dish, restaurantId, quantity, requiredExtras, optionalExtras);
+      
+      // Optional: Show success message or navigate to cart
+      router.push('/carts');
+    } catch (error) {
+      setError(error.message || "Error adding to cart");
+      console.error("Error adding to cart:", error);
     }
   };
   
-
   if (!dish) {
     return (
-      <View>
-        <Text>Dish not found.</Text>
+      <View className="flex-1 justify-center items-center">
+        <Text>{error || "Loading..."}</Text>
       </View>
     );
   }
@@ -102,6 +121,11 @@ const DishDetails = () => {
     <ScrollView className='flex'>
       <DishHeader Dish={dish} />
       <View className='m-[10px]'>
+        {error && (
+          <View className="bg-red-100 p-3 mb-4 rounded">
+            <Text className="text-red-600">{error}</Text>
+          </View>
+        )}
 
         {dish.requiredExtras && (
           <>
@@ -172,12 +196,15 @@ const DishDetails = () => {
           <Text className='mb-[10px]'>
             Quantity
           </Text>
-          <Counter count={count} setCount={setCount} />
+          <Counter quantity={quantity} setQuantity={setQuantity} />
         </View>
 
-        <TouchableOpacity onPress={() => addToCart()} className='flex-1 bg-black mt-auto p-[20px] items-center'>
-          <Text className='text-white font-bold text-[20px]' href='/cart/[id]'>
-            Add {count} Items to basket (${getTotal()})
+        <TouchableOpacity 
+          onPress={addToCart} 
+          className='flex-1 bg-black mt-auto p-[20px] items-center'
+        >
+          <Text className='text-white font-bold text-[20px]'>
+            Add {quantity} Items to basket (${getTotal()})
           </Text>
         </TouchableOpacity>
 

@@ -1,7 +1,6 @@
 import { Redirect, Link } from 'expo-router';
 import { TouchableOpacity, ScrollView, View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useGlobalContext } from '~/providers/GlobalProvider';
 
 export default function App() {

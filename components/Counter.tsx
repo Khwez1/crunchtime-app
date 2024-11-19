@@ -1,21 +1,21 @@
 import { View, Text } from 'react-native'
 import { AntDesign } from '@expo/vector-icons'
 
-const Counter = ({count, setCount}) => {
+const Counter = ({quantity, setQuantity}) => {
 
     const increment = () => {
-        setCount(count + 1)
+        setQuantity(quantity + 1)
     }
 
     const decrement = () => {
-        if(count > 1){
-            setCount(count - 1)
+        if(quantity > 1){
+            setQuantity(quantity - 1)
         }
     }
   return (
     <View className='flex-row justify-start'>
         <AntDesign name='minuscircle' size={26} color="black" onPress={decrement} />
-        <Text className='text-[18px] mt-[1px]'> {count} </Text>
+        <Text className='text-[18px] mt-[1px]'> {quantity} </Text>
         <AntDesign name='pluscircle' size={26} color="black" onPress={increment} />
     </View>
   )

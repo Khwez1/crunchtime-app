@@ -2,6 +2,8 @@
 import { View, Image, Text } from 'react-native';
 
 const CartDishItem = ({ cartDish }) => {
+    console.log(cartDish);
+    
   return (
     <View className="my-[15px] flex-row items-center px-[10px]">
       <Image source={{ uri: cartDish.image }} className="mr-3 h-[40px] w-[40px] rounded-2xl" />

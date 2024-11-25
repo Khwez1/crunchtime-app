@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { account, ID, databases, functions } from '../lib/appwrite';
 
-const GlobalContext = createContext();
+const GlobalContext = createContext({});
 export const useGlobalContext = () => useContext(GlobalContext);
 
 const GlobalProvider = ({ children }) => {
@@ -11,7 +11,7 @@ const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [challengeId, setChallengeId] = useState(null);
-
+  
   // Register
   async function Register(email: string, password: string, username: string, phone: string) {
     try {

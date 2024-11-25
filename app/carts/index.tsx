@@ -66,8 +66,8 @@ const CartsPage = () => {
                 className="bg-white rounded-lg shadow-md p-4 mb-4"
                 onPress={() => {
                   router.push({
-                    pathname: 'cart/[restaurantId]',
-                    params: { restaurantId: cart.restaurantId }
+                    pathname: 'cart/[id]',
+                    params: { id: cart.restaurantId }
                   });
                 }}
               >

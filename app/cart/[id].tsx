@@ -1,17 +1,18 @@
 // cart/[id].tsx
-import { View, Text, FlatList, Image } from 'react-native';
+import { View, Text, FlatList, Image, Pressable } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getRestaurant } from '~/lib/appwrite';
 import CartDishItem from '~/components/CartDishItem';
 import { useEffect, useState, useMemo } from 'react';
 import { useCartContext } from '~/providers/CartProvider';
-import { useGlobalContext } from '~/providers/GlobalProvider';
+import { useOrderContext } from '~/providers/OrderProvider';
+import { router } from 'expo-router';
 
 const Cart = () => {
   const { id } = useLocalSearchParams(); // id is the restaurantId
   const [restaurant, setRestaurant] = useState(null);
   const { carts, loading, error } = useCartContext();
-  const { user } = useGlobalContext();
+  const { createOrder } = useOrderContext();
 
   // Find the specific cart for this restaurant
   const currentCart = useMemo(() => {
@@ -98,11 +99,9 @@ const Cart = () => {
             <View className="mt-4 mb-4">
               <Text className="text-lg font-bold">Total: ${total}</Text>
             </View>
-            <View className="flex bg-black mt-auto p-[20px] items-center">
-              <Text className="text-white font-bold text-[20px]">
-                Checkout
-              </Text>
-            </View>
+            <Pressable onPress={() => router.push({ pathname: '/checkout/[id]', params: { id: currentCart.restaurantId }})}>
+              <Text>Go to Checkout</Text>
+            </Pressable>
           </>
         )}
       </View>

@@ -75,6 +75,7 @@ export const CartProvider = ({ children }) => {
       const newCartItem = {
         dishId: dish.$id,
         name: dish.name,
+        image: dish.image,
         price: dish.price,
         quantity,
         requiredExtras,

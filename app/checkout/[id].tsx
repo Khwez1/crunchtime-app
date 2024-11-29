@@ -146,10 +146,11 @@ const Checkout = () => {
           await createOrder(
             restaurant,
             cart.cartItems,
-            total
+            total,
+            cart.$id
           );
-
-          console.log('Order placement complete');
+          
+          console.log('Order placement complete:', cart.$id);
         }}
       >
         <Text className="text-white text-center text-lg font-bold">

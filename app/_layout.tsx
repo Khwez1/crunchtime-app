@@ -19,9 +19,10 @@ export default function RootLayout() {
           }}>
             {/* <Stack.Screen name="(auth)" /> */}
             {/* <Stack.Screen name="(tabs)" /> */}
-            <Stack.Screen name="carts/index" />
-            <Stack.Screen name="cart/[id]" />
-            <Stack.Screen name="checkout/[id]" />
+            {/* <Stack.Screen name="carts/index" /> */}
+            {/* <Stack.Screen name="cart/[id]" /> */}
+            {/* <Stack.Screen name="checkout/[id]" /> */}
+            <Stack.Screen name="order/index" />
             <Stack.Screen name="restaurantDetails/[id]" />
             <Stack.Screen name="dishDetails/[id]" />
           </Stack>

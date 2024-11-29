@@ -101,3 +101,23 @@ export async function getDish(id) {
         throw error;
     }
 }
+
+export async function fetchProfile(user_id: string) {
+    try {
+      const response = await databases.listDocuments(
+        '669a5a3d003d47ff98c7', // Database ID
+        '669a5a7f000cea3cde9d', // Collection ID, users
+        [Query.equal('userId', user_id)]
+      );
+      console.log(response.documents);
+      if (response.documents.length > 0) {
+        console.log('User document retrieved:', response.documents[0]);
+        return response.documents[0];
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (error) {
+      console.log('Error fetching user info:', error.message);
+      throw error;
+    }
+}

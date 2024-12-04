@@ -40,6 +40,7 @@ const Cart = () => {
     const fetchRestaurant = async () => {
       try {
         const restaurantData = await getRestaurant(id);
+        console.log("Restaurant ID:", id);
         setRestaurant(restaurantData);
       } catch (error) {
         console.error("Error fetching restaurant:", error);

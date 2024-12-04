@@ -17,6 +17,7 @@ const RestaurantDetails = () => {
     }
     // Fetch restaurant details
     getRestaurant(id)
+    
     .then((res) => {
       const restaurantData = res.documents ? res.documents[0] : res;  // Adjust if it's inside 'documents'
       setRestaurant(restaurantData);

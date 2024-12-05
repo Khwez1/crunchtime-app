@@ -19,10 +19,8 @@ const ManagePaymentMethods = () => {
       Alert.alert("Error", "Please fill in all card details.");
       return;
     }
-
-    // This step requires a user authorization (which is typically handled by Paystack's frontend JS SDK or Checkout API)
-    const email = "user@example.com"; // User's email for authorization
-
+  
+    const email = "user@example.com"; // User's email
     try {
       // Step 1: Initialize the transaction
       const initResponse = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -33,24 +31,51 @@ const ManagePaymentMethods = () => {
         },
         body: JSON.stringify({
           email: email,
-          amount: 1, // A small amount for tokenization
+          amount: 100, // Amount in kobo (smallest currency unit)
         }),
       });
-
+  
       const initData = await initResponse.json();
-
+  
       if (initResponse.ok) {
-        console.log("Initialization Response:", initData);
         const checkoutUrl = initData.data.authorization_url;
-        
-        // Redirect user to Paystack's checkout page for payment authorization
-        Alert.alert("Redirect to Paystack", "Please complete the payment authorization.");
-        
-        // Open the URL in a browser or in-app browser
-        Linking.openURL(checkoutUrl).catch(err => console.error("Failed to open URL:", err));
-
-        // Step 2: After the user completes the payment, handle the authorization code
-        // This part would require monitoring the webhook or redirect response
+        const reference = initData.data.reference;
+  
+        // Redirect user to Paystack's checkout page
+        Linking.openURL(checkoutUrl).catch((err) =>
+          console.error("Failed to open URL:", err)
+        );
+  
+        // Step 2: Verify transaction after authorization
+        const verifyTransaction = async () => {
+          const verifyResponse = await fetch(
+            `https://api.paystack.co/transaction/verify/${reference}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+              },
+            }
+          );
+  
+          const verifyData = await verifyResponse.json();
+  
+          if (verifyResponse.ok && verifyData.data.status === "success") {
+            const authorizationCode = verifyData.data.authorization.authorization_code;
+            const cardDetails = verifyData.data.authorization;
+  
+            // Save the card (e.g., last 4 digits, authorization_code) to Appwrite
+            await saveCardToAppwrite(email, authorizationCode, cardDetails);
+  
+            Alert.alert("Success", "Card added successfully!");
+          } else {
+            Alert.alert("Error", "Transaction verification failed.");
+          }
+        };
+  
+        // Poll for transaction verification
+        setTimeout(verifyTransaction, 10000); // Delay to allow user to complete payment
       } else {
         throw new Error(initData.message || "Failed to initialize payment");
       }
@@ -61,6 +86,38 @@ const ManagePaymentMethods = () => {
       setIsLoading(false);
     }
   };
+  
+  // Function to save card details to Appwrite
+  const saveCardToAppwrite = async (email, authorizationCode, cardDetails) => {
+    try {
+      const response = await fetch("https://cloud.appwrite.io/v1/database/collections/cards/documents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Appwrite-Project": "66bb50ba003a365f917d",
+          "X-Appwrite-Key": "standard_add181f317649bdb7c3889dd9953c762a89719123658e4798e0a5b313bccb335ecd411952040a4f2604e875c8ea88aebee2a27a2a323a0db6cc8673a1eff005255b40f75898006b56f880b59e5a33e4b1a79c8e8faab83acd57d30c1772727c0bc33b0c8e3baaee83f1996529be2eeae68f7059f0b7e15141c972d4a966d001f",
+        },
+        body: JSON.stringify({
+          data: {
+            email,
+            authorizationCode,
+            last4: cardDetails.last4,
+            exp_month: cardDetails.exp_month,
+            exp_year: cardDetails.exp_year,
+          },
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to save card to Appwrite");
+      }
+  
+      console.log("Card saved to Appwrite");
+    } catch (error) {
+      console.error("Error saving card to Appwrite:", error.message);
+    }
+  };
+  
 
   return (
     <View style={{ padding: 20 }}>

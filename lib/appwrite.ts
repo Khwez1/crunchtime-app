@@ -121,3 +121,34 @@ export async function fetchProfile(user_id: string) {
       throw error;
     }
 }
+
+export const getCategories = async () => {
+    return [
+      {
+        id: '1',
+        name: 'Pizza',
+        image: 'https://example.com/pizza.png',
+      },
+      {
+        id: '2',
+        name: 'Burgers',
+        image: 'https://example.com/burgers.png',
+      },
+      {
+        id: '3',
+        name: 'Sushi',
+        image: 'https://example.com/sushi.png',
+      },
+      {
+        id: '4',
+        name: 'Pasta',
+        image: 'https://example.com/pasta.png',
+      },
+      {
+        id: '5',
+        name: 'Desserts',
+        image: 'https://example.com/desserts.png',
+      },
+    ];
+  };
+  

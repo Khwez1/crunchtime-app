@@ -52,10 +52,11 @@ export const CartProvider = ({ children }) => {
     return optionalExtrasTotal + requiredExtrasTotal;
   };
 
+
   const addProduct = async (
     dish,
     restaurantId,
-    quantity = 1,
+    quantity = 1, // Default to 1 if not provided
     requiredExtras = [],
     optionalExtras = []
   ) => {
@@ -63,11 +64,11 @@ export const CartProvider = ({ children }) => {
       setError('User ID is missing.');
       return;
     }
-
+  
     try {
       setLoading(true);
       setError(null);
-
+  
       // Get the cart for this specific restaurant
       const existingCart = getCartByRestaurantId(restaurantId);
       const extrasPrice = calculateExtrasPrice(requiredExtras, optionalExtras);
@@ -77,12 +78,12 @@ export const CartProvider = ({ children }) => {
         name: dish.name,
         image: dish.image,
         price: dish.price,
-        quantity,
+        quantity: 1, // Always add one item
         requiredExtras,
         optionalExtras,
-        totalPrice: (dish.price + extrasPrice) * quantity,
+        totalPrice: (dish.price + extrasPrice),
       };
-
+  
       if (existingCart) {
         // Update existing cart for this restaurant
         const cartItems = JSON.parse(existingCart.cartItems);
@@ -93,15 +94,15 @@ export const CartProvider = ({ children }) => {
           JSON.stringify(item.requiredExtras) === JSON.stringify(requiredExtras) &&
           JSON.stringify(item.optionalExtras) === JSON.stringify(optionalExtras)
         );
-
+  
         if (existingItemIndex !== -1) {
           // Update quantity if dish already exists with same extras
-          cartItems[existingItemIndex].quantity += quantity;
-          cartItems[existingItemIndex].totalPrice += newCartItem.totalPrice;
+          cartItems[existingItemIndex].quantity += 1; // Increase by 1
+          cartItems[existingItemIndex].totalPrice = (cartItems[existingItemIndex].price + extrasPrice) * cartItems[existingItemIndex].quantity;
         } else {
           cartItems.push(newCartItem);
         }
-
+  
         await databases.updateDocument(DATABASE_ID, CART_COLLECTION_ID, existingCart.$id, {
           cartItems: JSON.stringify(cartItems),
         });
@@ -113,7 +114,7 @@ export const CartProvider = ({ children }) => {
           cartItems: JSON.stringify([newCartItem]),
         });
       }
-
+  
       // Refresh carts after updating
       await fetchCarts();
     } catch (error) {
@@ -133,14 +134,97 @@ export const CartProvider = ({ children }) => {
     }
   }, [user]);
 
+  const updateProductQuantity = async (
+    dish,
+    restaurantId,
+    newQuantity,
+    itemIndex,
+    requiredExtras = [],
+    optionalExtras = []
+  ) => {
+    if (!user?.$id) {
+      setError('User ID is missing.');
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      setError(null);
+  
+      const existingCart = getCartByRestaurantId(restaurantId);
+      if (existingCart) {
+        const cartItems = JSON.parse(existingCart.cartItems);
+        const currentItem = cartItems[itemIndex];
+        const extrasPrice = calculateExtrasPrice(requiredExtras, optionalExtras);
+  
+        if (currentItem) {
+          currentItem.quantity = newQuantity;
+          currentItem.totalPrice = (currentItem.price + extrasPrice) * newQuantity;
+  
+          await databases.updateDocument(DATABASE_ID, CART_COLLECTION_ID, existingCart.$id, {
+            cartItems: JSON.stringify(cartItems),
+          });
+        }
+      }
+  
+      // Refresh carts after updating
+      await fetchCarts();
+    } catch (error) {
+      setError(`Error updating quantity: ${error.message}`);
+      console.error('Error updating quantity:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const removeProduct = async (dish, restaurantId, itemIndex) => {
+    if (!user?.$id) {
+      setError('User ID is missing.');
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      setError(null);
+  
+      const existingCart = getCartByRestaurantId(restaurantId);
+      if (existingCart) {
+        let cartItems = JSON.parse(existingCart.cartItems);
+        cartItems.splice(itemIndex, 1); // Remove the item
+  
+        if (cartItems.length > 0) {
+          await databases.updateDocument(DATABASE_ID, CART_COLLECTION_ID, existingCart.$id, {
+            cartItems: JSON.stringify(cartItems),
+          });
+        } else {
+          // If cart is empty after removal, consider deleting the cart or marking it as empty
+          await databases.deleteDocument(DATABASE_ID, CART_COLLECTION_ID, existingCart.$id);
+        }
+      }
+  
+      // Refresh carts after updating
+      await fetchCarts();
+    } catch (error) {
+      setError(`Error removing product: ${error.message}`);
+      console.error('Error removing product:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     addProduct,
+    updateProductQuantity,  // Make sure this is included
+    removeProduct,
     loading,
     error,
     carts,
     fetchCarts,
     getCartByRestaurantId
   };
+
+ 
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

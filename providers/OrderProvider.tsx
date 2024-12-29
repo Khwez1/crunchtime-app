@@ -20,6 +20,7 @@ const OrderProvider = ({ children }) => {
             '6731ec1a001ab4994c0c', // Order collection ID
             [
               Query.equal('userId', user.$id),
+              Query.equal('orderStatus', 'ACCEPTED' ),
               Query.notEqual('orderStatus', 'CANCELED'),
               Query.notEqual('orderStatus', 'COMPLETED'),
             ]
@@ -56,22 +57,28 @@ const OrderProvider = ({ children }) => {
   // Fetch driver details for the active order
   useEffect(() => {
     if (!activeOrder?.driverId) return;
-
+  
     const fetchDriver = async () => {
       try {
-        const driver = await databases.getDocument(
+        const response = await databases.listDocuments(
           '669a5a3d003d47ff98c7', // Database ID
           '66bc885a002d237e96b9', // Driver collection ID
-          activeOrder.driverId
+          [Query.equal('driverId', activeOrder.driverId)] // Query to match driverId
         );
-        setDriver(driver);
+  
+        if (response.documents.length > 0) {
+          setDriver(response.documents[0]); // Set the first matching driver document
+        } else {
+          console.warn('No driver found with the specified driverId.');
+          setDriver(null);
+        }
       } catch (error) {
         console.error('Error fetching driver:', error);
       }
     };
-
+  
     fetchDriver();
-  }, [activeOrder]);
+  }, [activeOrder]);  
 
   // Subscribe to updates for the active order and driver
   useEffect(() => {

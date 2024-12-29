@@ -12,7 +12,6 @@ const Cart = () => {
   const { id } = useLocalSearchParams(); // id is the restaurantId
   const [restaurant, setRestaurant] = useState(null);
   const { carts, loading, error } = useCartContext();
-  const { createOrder } = useOrderContext();
 
   // Find the specific cart for this restaurant
   const currentCart = useMemo(() => {
@@ -87,7 +86,7 @@ const Cart = () => {
         <FlatList
           data={cartItems}
           keyExtractor={(item, index) => `${item.dishId}-${index}`}
-          renderItem={({ item }) => <CartDishItem cartDish={item} />}
+          renderItem={({ item }) => <CartDishItem cartDish={item} restaurantId={id} />}
           ListEmptyComponent={
             <Text className="text-center py-4">No items in cart</Text>
           }

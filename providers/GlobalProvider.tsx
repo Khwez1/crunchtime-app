@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { createContext, useContext, useEffect, useState } from 'react';
-
-import { account, ID, databases, functions } from '../lib/appwrite';
+import { account, ID, databases, functions, fetchProfile, updateProfile } from '../lib/appwrite';
 
 const GlobalContext = createContext({});
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -11,7 +10,41 @@ const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [challengeId, setChallengeId] = useState(null);
-  
+  const [profile, setProfile] = useState(null);
+
+  const fetchUserProfile = async (userId) => {
+    if (!userId) {
+      throw new Error('Invalid userId provided to fetchUserProfile');
+    }
+    try {
+      const fetchedProfile = await fetchProfile(userId);
+      setProfile(fetchedProfile);
+      return fetchedProfile; // Return fetched profile for direct usage
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
+      throw error;
+    }
+  };
+
+  //Delete user
+  async function deleteUser(userId) {
+    try {
+      const result = await functions.createExecution(
+        '67628ba43c6b1d58bb38',
+        JSON.stringify({ userId })
+      );
+      console.log('Function response:', result);
+      const response = await databases.deleteDocument(
+        '669a5a3d003d47ff98c7', // Database ID
+        '669a5a7f000cea3cde9d', // Collection ID, users
+        userId
+      );
+      signOut();
+    } catch (error) {
+      console.error('Error executing function:', error);
+    }
+  }
+
   // Register
   async function Register(email: string, password: string, username: string, phone: string) {
     try {
@@ -50,25 +83,6 @@ const GlobalProvider = ({ children }) => {
     }
   }
 
-  //Delete user
-  async function deleteUser(userId) {
-    try {
-      const result = await functions.createExecution(
-        '66e81c81000b77b6beae',
-        JSON.stringify({ userId })
-      );
-      console.log('Function response:', result);
-      const response = await databases.deleteDocument(
-        '669a5a3d003d47ff98c7', // Database ID
-        '669a5a7f000cea3cde9d', // Collection ID, users
-        userId
-      );
-      signOut();
-    } catch (error) {
-      console.error('Error executing function:', error);
-    }
-  }
-
   const signIn = async (email, password) => {
     try {
       // Step 1: Attempt to sign in with email and password
@@ -85,7 +99,7 @@ const GlobalProvider = ({ children }) => {
       const user = await account.get();
       setUser(user);
       setIsLogged(true);
-      router.push('/one'); // Directly navigate to home if no MFA is needed
+      router.push('/home'); // Directly navigate to home if no MFA is needed
   
     } catch (error) {
       if (error.type === 'user_more_factors_required') {
@@ -120,7 +134,7 @@ const GlobalProvider = ({ children }) => {
       const user = await account.get();
       setUser(user);
       setIsLogged(true); // Now set the user as logged in
-      router.push('/one'); // Navigate to home upon successful verification
+      router.push('/home'); // Navigate to home upon successful verification
     } catch (error) {
       console.error('Failed to complete MFA challenge:', error);
       throw new Error('Failed to verify OTP. Please try again.');
@@ -146,7 +160,7 @@ const GlobalProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []);
+  }, []);  
 
   return (
     <GlobalContext.Provider
@@ -163,6 +177,9 @@ const GlobalProvider = ({ children }) => {
         Register,
         completeMfa,
         deleteUser,
+        fetchUserProfile,
+        setProfile,
+        profile
       }}>
       {children}
     </GlobalContext.Provider>

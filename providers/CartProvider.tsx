@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useGlobalContext } from '~/providers/GlobalProvider';
-import { databases, Query, ID } from '../lib/appwrite';
+import { databases, Query, ID, updateCartItemQuantityInDatabase, updateCartItemsInDatabase } from '../lib/appwrite';
 
 const DATABASE_ID = '669a5a3d003d47ff98c7';
 const CART_COLLECTION_ID = '6731d6a50011b3248698';
@@ -32,7 +32,8 @@ export const CartProvider = ({ children }) => {
       const response = await databases.listDocuments(DATABASE_ID, CART_COLLECTION_ID, [
         Query.equal('userId', user.$id),
       ]);
-
+      console.log('Carts:', JSON.stringify(response.documents, null, 2));
+      
       setCarts(response.documents || []);
     } catch (error) {
       setError(`Error fetching carts: ${error.message}`);
@@ -50,6 +51,53 @@ export const CartProvider = ({ children }) => {
     const optionalExtrasTotal = optionalExtras.reduce((sum, extra) => sum + extra.price, 0);
     const requiredExtrasTotal = Object.values(requiredExtras).reduce((sum, extra) => sum + extra.price, 0);
     return optionalExtrasTotal + requiredExtrasTotal;
+  };
+
+  const updateCartItemQuantity = async (restaurantId, dishId, quantity) => {
+    console.log('Updating cart item quantity:', { restaurantId, dishId, quantity });
+    try {
+      // Find the cart for the specified restaurant
+      const cart = carts.find(cart => cart.restaurantId === restaurantId);
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      console.log('Cart found:', cart);
+      console.log('Cart ID:', cart.$id);
+
+      // Parse cartItems
+      const cartItems = JSON.parse(cart.cartItems);
+
+      // Create a new cartItems array with the updated item
+      const updatedCartItems = cartItems.map(item => {
+        if (item.dishId === dishId) {
+          return { ...item, quantity, totalPrice: item.price * quantity };
+        }
+        return item;
+      });
+
+      // Update the cartItems in the database
+      await updateCartItemsInDatabase(cart.$id, updatedCartItems);
+
+      // Update the cartItems in the frontend
+      setCarts(prevCarts => {
+        return prevCarts.map(c => {
+          if (c.restaurantId === restaurantId) {
+            return { ...c, cartItems: JSON.stringify(updatedCartItems) };
+          }
+          return c;
+        });
+      });
+
+      // Refresh carts after updating
+      await fetchCarts();
+    } catch (error) {
+      setError(`Error managing cart: ${error.message}`);
+      console.error('Error managing cart:', error);
+      // Handle the error gracefully
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addProduct = async (
@@ -134,6 +182,7 @@ export const CartProvider = ({ children }) => {
   }, [user]);
 
   const value = {
+    updateCartItemQuantity,
     addProduct,
     loading,
     error,

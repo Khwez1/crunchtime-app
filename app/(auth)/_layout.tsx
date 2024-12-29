@@ -34,6 +34,12 @@ export default function AuthLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="TnCs" // Add the verify screen here
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </>
   );

@@ -1,15 +1,36 @@
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import DishListItem from '~/components/DishListItem';
 import Header from '~/components/RestaurantHeader';
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, Stack, useLocalSearchParams, } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { getRestaurant, getDishes } from '~/lib/appwrite';
+import { useCartContext } from '~/providers/CartProvider';
 
 const RestaurantDetails = () => {
-  const { id } = useLocalSearchParams(); // Get restaurantId from the route params
+  const navigation = useNavigation();
+  const { id, name } = useLocalSearchParams(); // Get restaurantId from the route params
   const [restaurant, setRestaurant] = useState(null);
   const [dishes, setDishes] = useState([]);
-  const [loading, setLoading] = useState(true);  
+  const [loading, setLoading] = useState(true);
+  const { carts } = useCartContext();
+  
+  // Find the specific cart for this restaurant
+  const currentCart = useMemo(() => {
+    return carts.find(cart => cart.restaurantId === id);
+  }, [carts, id]);
+  
+  // Parse cart items
+  const cartItems = useMemo(() => {
+    if (!currentCart) return [];
+    try {
+      return JSON.parse(currentCart.cartItems);
+    } catch (error) {
+      console.error("Error parsing cart items:", error);
+      return [];
+    }
+  }, [currentCart]);
+
   // Fetch restaurant and dishes data
   useEffect(() => {
     if(!id){
@@ -48,6 +69,11 @@ const RestaurantDetails = () => {
 
   return (
     <View className="flex">
+      <Stack.Screen
+        options={{
+          title: name || 'Restaurant Details', // Use restaurant name or fallback
+        }}
+      />
       {/* FlatList to render dishes */}
       <FlatList 
         ListHeaderComponent={() => <Header restaurant={restaurant} />}
@@ -55,6 +81,23 @@ const RestaurantDetails = () => {
         renderItem={({ item }) => <DishListItem dish={item} restaurantId={id} />}
         keyExtractor={(item) => item.$id} // Ensure each dish has a unique key (use dish ID here)
       />
+      {cartItems.length > 0 && (
+        <Pressable 
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            left: 20,
+            right: 20,
+            backgroundColor: 'red',
+            padding: 15,
+            borderRadius: 10,
+            alignItems: 'center',
+          }}
+          onPress={() => router.push({ pathname: '/cart/[id]', params: { id } })}
+        >
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>View Cart ({cartItems.length} items)</Text>
+        </Pressable>
+      )}
     </View>
   );
 };

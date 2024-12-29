@@ -1,4 +1,4 @@
-import { Redirect, Link } from 'expo-router';
+import { Redirect, Link, router } from 'expo-router';
 import { TouchableOpacity, ScrollView, View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '~/providers/GlobalProvider';
@@ -6,7 +6,8 @@ import { useGlobalContext } from '~/providers/GlobalProvider';
 export default function App() {
   const { loading, isLogged } = useGlobalContext();
 
-  if (!loading && isLogged) return <Redirect href="/one" />;
+  if (!loading && isLogged) return <Redirect href="/home" />;
+
   return (
     <SafeAreaView className="h-full">
       <ScrollView contentContainerStyle={{ height: '100%' }}>
@@ -34,7 +35,7 @@ export default function App() {
 
               <Text className="mt-5 text-center">
                 By Logging In Or Registering. You Have Agreed To{' '}
-                <Text className="text-red-500">The Terms And Conditions</Text> And{' '}
+                <Link href='/(auth)TnCs' className="text-red-500">The Terms And Conditions</Link> And{' '}
                 <Text className="text-red-500">Privacy Policy</Text>
               </Text>
             </View>

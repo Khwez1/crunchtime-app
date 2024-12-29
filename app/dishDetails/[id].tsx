@@ -129,10 +129,10 @@ const DishDetails = () => {
 
         {dish.requiredExtras && (
           <>
-            <Text className='text-[24px] mb-[10px] mt-[20px]'>Required Extras</Text>
+            <Text className='text-[22px] mb-[10px] font-medium'>Required Extras</Text>
             {dish.requiredExtras.map((extra, index) => (
               <View key={index} className='flex-col justify-between mb-[10px]'>
-                <Text>{extra.name}</Text>
+                <Text className='mb-[10px]'>{extra.name}</Text>
                 {extra.options.map((option, idx) => (
                   <View key={idx} className='flex-row justify-between'>
                     <BouncyCheckbox
@@ -146,7 +146,7 @@ const DishDetails = () => {
                       disabled={requiredExtras[extra.name] && requiredExtras[extra.name].name !== option.name}
                       disableBuiltInState
                     />
-                    <Text className='text-gray-500'>$ {option.price}</Text>
+                    <Text className='text-black mt-[5px] '>$ {option.price}</Text>
                   </View>
                 ))}
               </View>
@@ -156,10 +156,10 @@ const DishDetails = () => {
 
         {dish.optionalExtras && (
           <>
-            <Text className='text-[24px] mb-[10px] mt-[20px]'>Optional Extras</Text>
+            <Text className='text-[22px] font-medium mb-[10px] mt-[20px]'>Optional Extras</Text>
             {dish.optionalExtras.map((extra, index) => (
               <View key={index} className='flex-col justify-between mb-[10px]'>
-                <Text>{extra.name}</Text>
+                <Text className='mb-[10px]'>{extra.name}</Text>
                 {extra.options.map((option, idx) => (
                   <View key={idx} className='flex-row justify-between'>
                     <BouncyCheckbox
@@ -171,7 +171,7 @@ const DishDetails = () => {
                       isChecked={optionalExtras.some(extra => extra.name === option.name)}
                       onPress={() => handleOptionalExtras(option)}
                     />
-                    <Text className='text-gray-500'>$ {option.price}</Text>
+                    <Text className='text-black mt-[5px]'>$ {option.price}</Text>
                   </View>
                 ))}
               </View>
@@ -201,7 +201,7 @@ const DishDetails = () => {
 
         <TouchableOpacity 
           onPress={addToCart} 
-          className='flex-1 bg-black mt-auto p-[20px] items-center'
+          className='flex-1 rounded-xl bg-red-600 mt-auto p-[20px] items-center'
         >
           <Text className='text-white font-bold text-[20px]'>
             Add {quantity} Items to basket (${getTotal()})

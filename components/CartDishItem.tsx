@@ -1,9 +1,21 @@
 // CartDishItem.tsx
 import { View, Image, Text } from 'react-native';
+import { useCartContext } from '~/providers/CartProvider';
+import QuantityCounter from './QuantityCounter';
 
-const CartDishItem = ({ cartDish }) => {
-    console.log(cartDish);
-    
+const CartDishItem = ({ cartDish, restaurantId }) => {
+  const { updateCartItemQuantity } = useCartContext();
+
+  const handleIncrement = () => {
+    updateCartItemQuantity(restaurantId, cartDish.dishId, cartDish.quantity + 1);
+  };
+
+  const handleDecrement = () => {
+    if (cartDish.quantity > 1) {
+      updateCartItemQuantity(restaurantId, cartDish.dishId, cartDish.quantity - 1);
+    }
+  };
+  
   return (
     <View className="my-[15px] flex-row items-center px-[10px]">
       <Image source={{ uri: cartDish.image }} className="mr-3 h-[40px] w-[40px] rounded-2xl" />
@@ -31,6 +43,13 @@ const CartDishItem = ({ cartDish }) => {
             ))}
           </>
         )}
+
+        {/* Quantity Counter */}
+        <QuantityCounter
+          quantity={cartDish.quantity}
+          onIncrement={handleIncrement}
+          onDecrement={handleDecrement}
+        />
       </View>
 
       <Text className="ml-auto font-semibold">${cartDish.totalPrice.toFixed(2)}</Text>

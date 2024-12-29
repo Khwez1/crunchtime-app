@@ -19,27 +19,27 @@ export default function orderScreen() {
           <Camera followZoomLevel={14} followUserLocation />
           <LocationPuck puckBearingEnabled puckBearing="course" pulsing={{ isEnabled: true }} />
 
-        {/* Restuarant Location */}
-        {activeOrder.restaurant[0] && (
+          {/* Restuarant Location */}
+          {activeOrder.restaurant[0] && (
             <PointAnnotation
-                id={`restaurant-${activeOrder.$id}`}
-                coordinate={[
-                    activeOrder.restaurant[0].lng,
-                    activeOrder.restaurant[0].lat
-                ]}
+              id={`restaurant-${activeOrder.$id}`}
+              coordinate={[
+                activeOrder.restaurant[0].lng,
+                activeOrder.restaurant[0].lat
+              ]}
             >
-                <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 20 }}>
-                    <Fontisto name="shopping-store" size={20} color="white" />
-                </View>
-                <Callout title={activeOrder.restaurant[0].name} />
+              <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 20 }}>
+                <Fontisto name="shopping-store" size={20} color="white" />
+              </View>
+              <Callout title={activeOrder.restaurant[0].name} />
             </PointAnnotation>
-        )}
+          )}
   
           {/* Driver Location */}
-          {driver?.lat && driver?.lng && (
+          {driver?.latitude && driver?.longitude && (
             <PointAnnotation
               id={`driver-${driver.$id}`}
-              coordinate={[driver.lng, driver.lat]}
+              coordinate={[driver.longitude, driver.latitude]}
             >
               <View style={{ backgroundColor: 'blue', padding: 5, borderRadius: 20 }}>
                 <Fontisto name="motorcycle" size={20} color="white" />

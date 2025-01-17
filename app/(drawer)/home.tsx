@@ -19,7 +19,7 @@ export default function Home() {
       <Tags />
       <Catergories />
       <View className='flex-1'>
-        <Text className='text-3xl font-medium'>
+        <Text className='text-3xl font-bold'>
           Your Favourites
         </Text>
         <Text className='text-lg'>

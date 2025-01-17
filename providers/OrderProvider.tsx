@@ -20,7 +20,6 @@ const OrderProvider = ({ children }) => {
             '6731ec1a001ab4994c0c', // Order collection ID
             [
               Query.equal('userId', user.$id),
-              Query.equal('orderStatus', 'ACCEPTED' ),
               Query.notEqual('orderStatus', 'CANCELED'),
               Query.notEqual('orderStatus', 'COMPLETED'),
             ]
@@ -43,11 +42,11 @@ const OrderProvider = ({ children }) => {
             console.log("Parsed active order:", parsedOrder);
             setActiveOrder(parsedOrder);
             } else {
-              console.log("No active orders found");
-              setActiveOrder(null);
+            console.log("No active orders found");
+            setActiveOrder(null);
           }
         } catch (error) {
-            console.error("Error fetching active order:", error);
+          console.error("Error fetching active order:", error);
         }
     };
 

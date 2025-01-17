@@ -8,6 +8,7 @@ import { router, usePathname } from 'expo-router';
 import { useOrderContext } from '~/providers/OrderProvider';
 import { useGlobalContext } from '~/providers/GlobalProvider';
 import SearchBar from './SearchBar';
+
 const Header = () => {
   const { activeOrder } = useOrderContext();
   const { user } = useGlobalContext();

@@ -216,3 +216,123 @@ export async function searchRestaurants(query: string) {
     throw new Error(err);
   }
 };
+
+//messaging
+// Send message
+export async function sendMessage(payload: object, Permissions: []) {
+  try {
+    await databases.createDocument(
+      '669a5a3d003d47ff98c7', // Database ID
+      '677d5197000b1aefb3d0', // Collection ID, messages
+      ID.unique(),
+      payload,
+      Permissions
+    );
+  } catch (err) {
+    console.log("Error! Couldn't send", err);
+  }
+}
+
+// Get messages
+export async function getMessages(activeOrderId: string) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7', // Database ID
+      '677d5197000b1aefb3d0', // Collection ID, messages
+      [
+        Query.orderDesc('$createdAt'),
+        Query.equal('orderId', activeOrderId)
+      ]
+    );
+    console.log('RESPONSE:', response);
+    return response.documents;
+  } catch (error) {
+    console.error('Failed to fetch messages:', error);
+    throw error;
+  }
+}
+
+//Delete message
+export async function deleteMessage(message_id: string) {
+  try {
+    await databases.deleteDocument(
+      '669a5a3d003d47ff98c7', // Database ID
+      '677d5197000b1aefb3d0', // Collection ID, messages
+      message_id
+    );
+  } catch (err) {
+    console.log("Couldn't delete");
+  }
+};
+
+export async function fetchUserCards(userId: string) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7', // Database ID
+      '67877db7003794586639', // Correct Collection ID for cards
+      [Query.equal('userId', userId)]
+    );
+    console.log('User cards retrieved:', response.documents);
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching user cards:', error.message);
+    throw error;
+  }
+};
+
+export async function saveCardAuthorization(userId, authorizationCode, maskedNumber, cardType) {
+  try {
+      const response = await databases.createDocument(
+          '669a5a3d003d47ff98c7', // Replace with your Appwrite database ID
+          '67877db7003794586639', // Replace with your Appwrite collection ID for cards
+          ID.unique(), // Generates a unique document ID
+          {
+              userId: userId,
+              authorizationCode: authorizationCode,
+              maskedNumber: maskedNumber,
+              cardType: cardType,
+          }
+      );
+      console.log('Card authorization saved:', response);
+      return response;
+  } catch (error) {
+      console.error('Error saving card authorization:', error);
+      throw error;
+  }
+};
+
+// Then, in your saveCardFromPaystackResponse function:
+export async function saveCardFromPaystackResponse(paystackResponse, userId) {
+  try {
+    const { data } = paystackResponse;
+
+    // Extract and format the card details from Paystack's response
+    const { card_type, authorization_code, bin, last4, exp_month, exp_year, channel, bank, brand, reusable } = data;
+
+    // Log for debugging
+    console.log('Paystack card type:', card_type);
+
+    const formattedCardType = card_type.toLowerCase().includes("credit") ? "Credit" : "Debit";
+
+    // Validate card type
+    if (!['Debit', 'Credit'].includes(formattedCardType)) {
+      console.error('Invalid card type:', formattedCardType);
+      throw new Error(`Invalid card type: ${formattedCardType}`);
+    }
+
+    // Now call the top-level function
+    await saveCardAuthorization(
+      userId,
+      authorization_code,
+      `${bin.slice(0, 6)}****${last4}`, // Assuming you want to mask the number like this
+      formattedCardType
+    );
+
+    // ... any other logic or return statement ...
+
+  } catch (error) {
+    // Handle errors
+    console.error('Error in saveCardFromPaystackResponse:', error);
+    throw error;
+  }
+};

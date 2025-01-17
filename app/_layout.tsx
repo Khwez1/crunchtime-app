@@ -15,15 +15,17 @@ export default function RootLayout() {
           }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(drawer)" />
+            <Stack.Screen name="(cards)" />
             <Stack.Screen name="cart/[id]" />
             <Stack.Screen name="checkout/[id]" />
             <Stack.Screen name="order/order" />
             <Stack.Screen name="search/[query]" />
+            <Stack.Screen name="Room" />
             <Stack.Screen 
               name="restaurantDetails/[id]"
               options={{ 
                 headerShown: true,
-               }} 
+              }} 
             />
             <Stack.Screen name="dishDetails/[id]" />
           </Stack>

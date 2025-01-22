@@ -3,7 +3,6 @@ import { SafeAreaView, View, Text, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { searchRestaurants } from '~/lib/appwrite';
 import RestaurantItem from '~/components/RestaurantItem';
-import Header from '~/components/Header';
 
 const Search = () => {
   const { query } = useLocalSearchParams();
@@ -51,7 +50,6 @@ const Search = () => {
 
   return (
     <View className='flex-1 align-middle justify-center p-[10px]'>
-        <Header/>
         <Text className='text-xl text-black'>Search Results for "{query}"</Text>
         <FlatList
           data={restaurants}

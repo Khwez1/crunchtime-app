@@ -35,7 +35,7 @@ export default function App() {
 
               <Text className="mt-5 text-center">
                 By Logging In Or Registering. You Have Agreed To{' '}
-                <Link href='/(auth)TnCs' className="text-red-500">The Terms And Conditions</Link> And{' '}
+                <Link href='/(auth)/TnCs' className="text-red-500">The Terms And Conditions</Link> And{' '}
                 <Text className="text-red-500">Privacy Policy</Text>
               </Text>
             </View>

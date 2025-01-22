@@ -20,7 +20,7 @@ export default function CategoryTags() {
         {categories.map((category, index) => (
           <View key={index} className="mr-4 items-center">
             <View className="bg-yellow-400 p-3 rounded-full">
-                <Ionicons name={category.icon} size={30} color="black" />
+              <Ionicons name={category.icon} size={24} color="black" />
             </View>
             <Text className="mt-2 text-center">{category.name}</Text>
           </View>

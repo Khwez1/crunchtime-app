@@ -12,7 +12,7 @@ export default function Tags() {
 
   return (
     <View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row ml-[8px] mt-2">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row ml-[8px] mt-1">
         {tags.map((tag, index) => (
           <View key={index} className="bg-red-600 mr-2 p-3 px-5 text-white rounded-3xl font-semibold flex-row items-center">
             <Ionicons name={tag.icon} size={18} color="white" className="mr-1" />

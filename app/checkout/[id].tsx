@@ -118,7 +118,7 @@ const Checkout = () => {
           text: 'OK',
           onPress: async () => {
             try {
-              const result = await router.push({
+              const result = router.push({
                 pathname: '/paystack/paystack',
                 params: { amount: calculateTotal(), email: user?.email || '' },
               });

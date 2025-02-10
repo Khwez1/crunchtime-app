@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 const Cart = () => {
   const { id } = useLocalSearchParams(); // id is the restaurantId
   const [restaurant, setRestaurant] = useState(null);
-  const { carts, loading, error, updateCartItemQuantity, removeFromCart } = useCartContext();
+  const { carts, loading, error, removeFromCart } = useCartContext();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
@@ -112,7 +112,7 @@ const Cart = () => {
             <CartDishItem 
               cartDish={item} 
               restaurantId={id} 
-              onDecrease={showRemoveModal} 
+              onDelete={showRemoveModal} 
             />
           </View>
         )}

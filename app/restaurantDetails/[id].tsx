@@ -82,21 +82,35 @@ const RestaurantDetails = () => {
         keyExtractor={(item) => item.$id} // Ensure each dish has a unique key (use dish ID here)
       />
       {cartItems.length > 0 && (
-        <Pressable 
+        <View
           style={{
             position: 'absolute',
             bottom: 20,
             left: 20,
             right: 20,
-            backgroundColor: 'red',
-            padding: 15,
-            borderRadius: 10,
             alignItems: 'center',
-          }}
-          onPress={() => router.push({ pathname: '/cart/[id]', params: { id } })}
-        >
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>View Cart ({cartItems.length} items)</Text>
-        </Pressable>
+          }}>
+          <Pressable 
+            style={{
+              backgroundColor: 'red',
+              padding: 15,
+              borderRadius: 10,
+              alignItems: 'center',
+              width: '100%',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+            onPress={() => router.push({ pathname: '/cart/[id]', params: { id } })}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>View Cart ({cartItems.length} items)</Text>
+          </Pressable>
+        </View>
       )}
     </View>
   );

@@ -1,15 +1,20 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
 
 const QuantityCounter = ({ quantity, onIncrement, onDecrement }) => {
   return (
     <View style={styles.container}>
       <Pressable onPress={onDecrement} style={[styles.button, styles.decrementButton]}>
-        <Text style={styles.buttonText}>-</Text>
+        {quantity > 1 ? (
+          <AntDesign name='minuscircle' size={17} color='white' />
+        ) : (
+          <FontAwesome name='trash' size={17} color='white' />
+        )}
       </Pressable>
       <Text style={styles.quantityText}>{quantity}</Text>
       <Pressable onPress={onIncrement} style={[styles.button, styles.incrementButton]}>
-        <Text style={styles.buttonText}>+</Text>
+        <AntDesign name='pluscircle' size={17} color='white' />
       </Pressable>
     </View>
   );

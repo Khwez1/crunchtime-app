@@ -108,31 +108,37 @@ const Checkout = () => {
     return subtotal + deliveryFee + serviceFee + tip;
   };
 
-  const handlePayment = async () => {
-    Alert.alert(
-      'Confirm Payment',
-      `Proceed with payment of $${calculateTotal().toFixed(2)}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'OK',
-          onPress: async () => {
-            try {
-              const result = router.push({
-                pathname: '/paystack/paystack',
-                params: { amount: calculateTotal(), email: user?.email || '' },
-              });
-              if (result?.error) {
-                Alert.alert("Payment Failed", "An error occurred during payment.");
-              }
-            } catch (error) {
-              console.error("Payment navigation error:", error);
-              Alert.alert("Payment Error", "Failed to navigate to payment.");
-            }
-          },
-        },
-      ]
-    );
+  const handlePayment = async (restaurant, cartItems, total, cart) => {
+    // Alert.alert(
+    //   'Confirm Payment',
+    //   `Proceed with payment of $${calculateTotal().toFixed(2)}?`,
+    //   [
+    //     { text: 'Cancel', style: 'cancel' },
+    //     {
+    //       text: 'OK',
+    //       onPress: async () => {
+    //         try {
+    //           const result = router.push({
+    //             pathname: '/paystack/paystack',
+    //             params: { amount: calculateTotal(), email: user?.email || '' },
+    //           });
+    //           if (result?.error) {
+    //             Alert.alert("Payment Failed", "An error occurred during payment.");
+    //           }
+    //         } catch (error) {
+    //           console.error("Payment navigation error:", error);
+    //           Alert.alert("Payment Error", "Failed to navigate to payment.");
+    //         }
+    //       },
+    //     },
+    //   ]
+    // );
+    await createOrder(
+      restaurant,
+      cartItems,
+      total,
+      cart
+    )
   };
 
   useEffect(() => {
@@ -321,7 +327,16 @@ const Checkout = () => {
 </View>
 
       {/* Pay Button */}
-      <Pressable style={styles.orderButton} onPress={handlePayment}>
+      <Pressable style={styles.orderButton} onPress={() => {
+        const total = calculateTotal(); 
+        handlePayment(
+          restaurant,
+          cart.cartItems,
+          total,
+          cart.$id  
+        )
+      }}
+      >
         <Text style={styles.orderButtonText}>Pay Now • ${calculateTotal().toFixed(2)}</Text>
       </Pressable>
     </ScrollView>

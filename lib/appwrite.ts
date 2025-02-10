@@ -130,9 +130,9 @@ export async function fetchProfile(user_id: string) {
       '669a5a7f000cea3cde9d', // Collection ID, users
       [Query.equal('userId', user_id)]
     );
-    console.log(response.documents);
+    // console.log(response.documents);
     if (response.documents.length > 0) {
-      console.log('User document retrieved:', response.documents[0]);
+      // console.log('User document retrieved:', response.documents[0]);
       return response.documents[0];
     } else {
       throw new Error('User not found');
@@ -339,5 +339,77 @@ export async function saveCardFromPaystackResponse(paystackResponse, userId) {
     // Handle errors
     console.error('Error in saveCardFromPaystackResponse:', error);
     throw error;
+  }
+};
+
+
+
+export async function fetchUserFavorites(userId) {
+  try {
+    const userDoc = await databases.getDocument(
+      '669a5a3d003d47ff98c7', // Database ID
+      '669a5a7f000cea3cde9d', // Collection ID (users)
+      userId // Filter by user ID
+    );
+
+    return userDoc.favorites || [];
+  } catch (error) { 
+    console.error('Error fetching user favorites:', error);
+    return [];
+  }
+}
+
+export async function getFavoriteRestaurants(favoriteIds) {
+  if (favoriteIds.length === 0) return [];
+
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7', // Database ID
+      '672b2eec001fae2377d9', // Collection ID (restaurants)
+      [
+        Query.equal("$id", favoriteIds) // Filter by IDs
+      ] 
+    );
+
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching favorite restaurants:', error);
+    return [];
+  }
+}
+
+export async function getOrdersHistory(userId) {
+  try {
+    const response = await databases.listDocuments(
+      '669a5a3d003d47ff98c7',
+      '6731ec1a001ab4994c0c',
+      [
+        Query.equal('userId', userId),
+        Query.equal('orderStatus','COMPLETED'),
+      ]
+    );
+    
+    const orders = response.documents.map((doc) => {
+      // Handle restaurant parsing (it's an array)
+      const restaurant = Array.isArray(doc.restaurant) 
+        ? doc.restaurant[0] 
+        : JSON.parse(doc.restaurant);
+
+      // Parse user if needed
+      const user = typeof doc.user === 'string'
+        ? JSON.parse(doc.user)
+        : doc.user;
+
+      return {
+        ...doc,
+        restaurant,
+        user
+      };
+    });
+    console.log(orders);
+    return orders;
+  } catch (error) {
+    console.error('Failed to fetch orders: ', error);
+    return [];
   }
 };

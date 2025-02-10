@@ -70,6 +70,18 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "mode": "manual",
+          "ios": {
+            "allowAlert": true,
+            "allowBadge": true,
+            "allowSound": true,
+            "criticalAlerts": true
+          }
+        }
       ]
     ]
   }

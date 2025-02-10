@@ -1,12 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const MyOrders = () => {
+export default function Ratings() {
   return (
     <View>
-      <Text>MyOrders</Text>
+      <Text>Ratings</Text>
     </View>
   )
 }
-
-export default MyOrders

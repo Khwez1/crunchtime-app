@@ -14,7 +14,7 @@ export default function RootLayout() {
             headerShown: false,
           }}>
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(drawer)" />
+            <Stack.Screen name="(tabs)" />
             <Stack.Screen name="(cards)" />
             <Stack.Screen name="cart/[id]" />
             <Stack.Screen name="checkout/[id]" />

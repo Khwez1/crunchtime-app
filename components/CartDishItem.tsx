@@ -3,7 +3,7 @@ import { View, Image, Text } from 'react-native';
 import { useCartContext } from '~/providers/CartProvider';
 import QuantityCounter from './QuantityCounter';
 
-const CartDishItem = ({ cartDish, restaurantId }) => {
+const CartDishItem = ({ cartDish, restaurantId, onDelete }) => {
   const { updateCartItemQuantity } = useCartContext();
 
   const handleIncrement = () => {
@@ -13,6 +13,8 @@ const CartDishItem = ({ cartDish, restaurantId }) => {
   const handleDecrement = () => {
     if (cartDish.quantity > 1) {
       updateCartItemQuantity(restaurantId, cartDish.dishId, cartDish.quantity - 1);
+    } else {
+      onDelete(cartDish)
     }
   };
   

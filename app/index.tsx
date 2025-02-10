@@ -1,10 +1,58 @@
-import { Redirect, Link, router } from 'expo-router';
+import { Redirect, Link } from 'expo-router';
 import { TouchableOpacity, ScrollView, View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '~/providers/GlobalProvider';
+import registerNNPushToken from 'native-notify';
+import { useEffect } from 'react';
+import * as Notifications from 'expo-notifications';
+
+async function registerForPushNotificationsAsync() {
+  const { status } = await Notifications.requestPermissionsAsync();
+  console.log('Notification permission status:', status);
+  if (status !== 'granted') {
+    alert('Permission for notifications was denied');
+    return;
+  }
+
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  console.log('Expo Push Token:', token);
+  return token;
+}
 
 export default function App() {
   const { loading, isLogged } = useGlobalContext();
+
+  // useEffect(() => {
+  //   // Register for native push notifications
+  //   registerNNPushToken(26844, 'fFuf2DO4MvdDUk4h4Fd4iX').then((response) => {
+  //     console.log('Native Notify response:', response);
+  //   }).catch((error) => {
+  //     console.error('Error registering for Native Notify:', error);
+  //   });
+
+  //   const registerNotifications = async () => {
+  //     await registerForPushNotificationsAsync();
+
+  //     // Schedule a local notification
+  //     const notification = await Notifications.scheduleNotificationAsync({
+  //       content: {
+  //         title: "Local Test",
+  //         body: "This is a local notification!",
+  //       },
+  //       trigger: { seconds: 5 },
+  //     });
+  //     console.log('Notification scheduled:', notification);
+  //   };
+
+  //   registerNotifications();
+
+  //   // Listen for received notifications
+  //   const subscription = Notifications.addNotificationReceivedListener((notification) => {
+  //     console.log("Notification received:", notification);
+  //   });
+
+  //   return () => subscription.remove(); // Cleanup on unmount
+  // }, []); // Dependency array ensures it runs only once
 
   if (!loading && isLogged) return <Redirect href="/home" />;
 
@@ -44,4 +92,4 @@ export default function App() {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
